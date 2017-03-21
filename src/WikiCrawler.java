@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -46,8 +47,23 @@ public class WikiCrawler {
      * @return An ArrayList of Strings consisting of links from doc
      */
     public ArrayList<String> extractLinks(String doc) {
-        // TODO
-        return null;
+        ArrayList<String> arr = new ArrayList<>();
+        String content = "";
+
+        // The content to search is everything after the first <p> or <P> tag
+        Matcher matcher = Pattern.compile("<[pP]>").matcher(doc);
+        if (matcher.find()) {
+            content = doc.substring(matcher.start());
+        }
+
+        // Get all valid relative urls and add them to the array arr
+        matcher = Pattern.compile("<a +href *= *\"(/wiki/[^#:]*?)\"")
+                .matcher(content);
+        while (matcher.find()) {
+            arr.add(matcher.group(1));
+        }
+
+        return arr;
     }
 
     /**
@@ -57,6 +73,11 @@ public class WikiCrawler {
      */
     public void crawl() {
         // TODO
+        String fixme = curlUrl("/wiki/Computer_Science");
+        ArrayList<String> arr = extractLinks(fixme);
+        for (String s : arr) {
+            System.out.println(s);
+        }
     }
 
     private String curlUrl(String urlString) {
@@ -69,12 +90,13 @@ public class WikiCrawler {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             StringBuilder sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
-                if (startingTagFound) {
-                    sb.append(line).append('\n');
-                } else if ((startingTagIndex = line.toLowerCase().indexOf("<p>")) >= 0) {
-                    startingTagFound = true;
-                    sb.append(line.substring(startingTagIndex)).append('\n');
-                }
+                sb.append(line).append(' ');
+//                if (startingTagFound) {
+//                    sb.append(line).append(' ');
+//                } else if ((startingTagIndex = line.toLowerCase().indexOf("<p>")) >= 0) {
+//                    startingTagFound = true;
+//                    sb.append(line.substring(startingTagIndex)).append(' ');
+//                }
             }
             return sb.toString();
         } catch (MalformedURLException e) {
