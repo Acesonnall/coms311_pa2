@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +18,9 @@ public class WikiCrawler {
     private String seedUrl;
     private int max;
     private String fileName;
+
+    private HashSet<String> vertices;
+
     private static final String BASE_URL = "https://www.wikipedia.org";
 
     /**
@@ -28,6 +32,7 @@ public class WikiCrawler {
         this.seedUrl = seedUrl;
         this.max = max;
         this.fileName = fileName;
+        vertices = new HashSet<>((int) Math.ceil(1.5 * max));
     }
 
     /**
@@ -72,38 +77,32 @@ public class WikiCrawler {
      * the web graph only over those pages. and writes the graph to the file fileName.
      */
     public void crawl() {
-        // TODO
-        String fixme = curlUrl("/wiki/Computer_Science");
-        ArrayList<String> arr = extractLinks(fixme);
-        for (String s : arr) {
-            System.out.println(s);
+        String seedDoc = curlUrl(seedUrl);
+        ArrayList<String> links = extractLinks(seedDoc);
+        for (String link : links) {
+            if (vertices.size() < max) {
+                vertices.add(link);
+            }
         }
     }
 
     private String curlUrl(String urlString) {
         String line;
-        boolean startingTagFound = false;
-        int startingTagIndex;
         try {
+            System.out.println("Curling " + BASE_URL + urlString + " ...");
             URL url = new URL(BASE_URL + urlString);
             InputStream is = url.openStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             StringBuilder sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
                 sb.append(line).append(' ');
-//                if (startingTagFound) {
-//                    sb.append(line).append(' ');
-//                } else if ((startingTagIndex = line.toLowerCase().indexOf("<p>")) >= 0) {
-//                    startingTagFound = true;
-//                    sb.append(line.substring(startingTagIndex)).append(' ');
-//                }
             }
             return sb.toString();
         } catch (MalformedURLException e) {
-            System.out.println("MalformedURLException");
+            System.out.println("MalformedURLException:  " + urlString);
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("IOException");
+            System.out.println("IOException:  " + urlString);
             e.printStackTrace();
         }
         return null;
