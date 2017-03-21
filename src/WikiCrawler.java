@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,8 +17,24 @@ public class WikiCrawler {
     private String fileName;
 
     private HashSet<String> vertices;
+    private ArrayList<Edge> edges;
 
     private static final String BASE_URL = "https://www.wikipedia.org";
+
+    private class Edge {
+        String from;
+        String to;
+
+        public Edge(String from, String to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public String toString() {
+            return from + " " + to;
+        }
+    }
 
     /**
      * @param seedUrl  The relative address of the seed url (within Wiki domain)
@@ -33,6 +46,7 @@ public class WikiCrawler {
         this.max = max;
         this.fileName = fileName;
         vertices = new HashSet<>((int) Math.ceil(1.5 * max));
+        edges = new ArrayList<>();
     }
 
     /**
@@ -82,6 +96,34 @@ public class WikiCrawler {
         for (String link : links) {
             if (vertices.size() < max) {
                 vertices.add(link);
+            }
+        }
+    }
+
+    private void saveToFile(ArrayList<Edge> edges) {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+
+        try {
+            fw = new FileWriter(fileName);
+            bw = new BufferedWriter(fw);
+            for (Edge edge : edges) {
+                bw.write(edge.toString());
+                bw.write('\n');
+            }
+            System.out.println("Results saved to " + fileName);
+        } catch (IOException e) {
+            System.out.println("IOException for file name:  " + fileName);
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bw != null)
+                    bw.close();
+                if (fw != null)
+                    fw.close();
+            } catch (IOException ex) {
+                System.out.println("IOException for file name:  " + fileName);
+                ex.printStackTrace();
             }
         }
     }
