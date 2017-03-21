@@ -1,4 +1,11 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * The WikiCrawler class has methods that can be used to crawl Wiki.
@@ -9,6 +16,7 @@ public class WikiCrawler {
     private String seedUrl;
     private int max;
     private String fileName;
+    private static final String BASE_URL = "https://www.wikipedia.org";
 
     /**
      * @param seedUrl  The relative address of the seed url (within Wiki domain)
@@ -49,5 +57,33 @@ public class WikiCrawler {
      */
     public void crawl() {
         // TODO
+    }
+
+    private String curlUrl(String urlString) {
+        String line;
+        boolean startingTagFound = false;
+        int startingTagIndex;
+        try {
+            URL url = new URL(BASE_URL + urlString);
+            InputStream is = url.openStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                if (startingTagFound) {
+                    sb.append(line).append('\n');
+                } else if ((startingTagIndex = line.toLowerCase().indexOf("<p>")) >= 0) {
+                    startingTagFound = true;
+                    sb.append(line.substring(startingTagIndex)).append('\n');
+                }
+            }
+            return sb.toString();
+        } catch (MalformedURLException e) {
+            System.out.println("MalformedURLException");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("IOException");
+            e.printStackTrace();
+        }
+        return null;
     }
 }
