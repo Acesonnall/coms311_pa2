@@ -1,4 +1,9 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The GraphProcessor reads a graph stored in a file, using a Strongly Connected Components (SCC)
@@ -14,11 +19,18 @@ import java.util.ArrayList;
  * @author nkarasch
  */
 public class GraphProcessor {
+    HashMap<String, HashSet<String>> graph;
+
     /**
      * @param graphData The absolute path of a file that stores a directed graph
      */
     public GraphProcessor(String graphData) {
-        // TODO
+        try {
+            initGraphFromFile(graphData);
+        } catch (IOException e) {
+            System.out.println("Couldn't read file! Given filename:  " + graphData);
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -46,7 +58,7 @@ public class GraphProcessor {
      */
     public ArrayList<String> componentVertices(String v) {
         // TODO
-        return null;
+        return new ArrayList<String>();
     }
 
     /**
@@ -76,6 +88,44 @@ public class GraphProcessor {
      */
     public ArrayList<String> bfsPath(String u, String v) {
         // TODO
-        return null;
+        return new ArrayList<String>();
+    }
+
+    // Assuming the file is in the correct format, this method will read the
+    // file, initialize the graph, and fill the graph with data
+    private void initGraphFromFile(String filename) throws IOException {
+        String errMessage = "Incorrect input file format!";
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        String line;
+        int numVertices = 42;
+
+        // Parse number of edges from the first line
+        if ((line = reader.readLine()) != null) {
+            try {
+                numVertices = Integer.parseInt(line.trim());
+            } catch (NumberFormatException e) {
+                System.out.println(errMessage);
+                throw new IOException(errMessage);
+            }
+        }
+
+        // Initialize the graph
+        graph = new HashMap<>((int) Math.ceil(1.5 * numVertices));
+
+        int splitIndex;
+        String from, to;
+        // Parse the graph data from the remaining lines
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty()) continue;
+
+            splitIndex = line.indexOf(" ");
+            from = line.substring(0, splitIndex);
+            to = line.substring(splitIndex).trim();
+
+            graph.putIfAbsent(from, new HashSet<>());
+            graph.get(from).add(to);
+        }
+        reader.close();
     }
 }
