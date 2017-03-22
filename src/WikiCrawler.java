@@ -12,18 +12,36 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("WeakerAccess")
 public class WikiCrawler {
+    // The page the crawler starts crawling from
     private String seedUrl;
+    // The max number of unique pages (vertices) the crawler will crawl
     private int max;
+    // The name of the file that the crawl() method will save to
     private String fileName;
 
+    // The set of unique web links being crawled
     private HashSet<String> vertices;
-    private HashSet<String> visited;
+    // The set of unique edges (link from one page to another) that have been discovered
     private HashSet<Edge> edges;
+    // A counter that keeps track of the order that edges are discovered
     private int discoveryCount = 0;
-    private int politenessPolicyCounter = 0;
 
+    /**
+     * The base url from which all relative urls (wiki pages) are curled.
+     */
     public static final String BASE_URL = "https://en.wikipedia.org";
 
+    // The following variables pertain to the "politeness policy"
+    // to avoid overloading the wikipedia servers
+    private int politenessPolicyCounter = 0;
+    private static final int NUM_CURLS_BEFORE_WAITING = 100;
+    private static final int SECONDS_TO_WAIT = 3;
+
+    // Set to 'true' if you want some status messages printed during the crawl.
+    // Can be used for debugging.
+    private static final boolean VERBOSE_OUTPUT = false;
+
+    // Represents a directed edge in the web graph -- a link from one page to another
     private class Edge {
         String from;
         String to;
@@ -54,6 +72,7 @@ public class WikiCrawler {
         }
     }
 
+    // Used for sorting an array of Edge objects based on the order the links were discovered
     private class EdgeComparator implements Comparator<Edge> {
         @Override
         public int compare(Edge e1, Edge e2) {
@@ -72,7 +91,6 @@ public class WikiCrawler {
         this.fileName = fileName;
         int initialSize = (int) Math.ceil(1.5 * max);
         vertices = new HashSet<>(initialSize);
-        visited = new HashSet<>(initialSize);
         edges = new HashSet<>(initialSize);
     }
 
@@ -113,17 +131,23 @@ public class WikiCrawler {
     }
 
     /**
-     * This method should construct the web graph over following pages: Consider the first
-     * max many pages that are visited when you do a BFS with seedUrl. Your program should construct
-     * the web graph only over those pages. and writes the graph to the file fileName.
+     * This method crawls the wikipedia site using Breadth-First Search, starting at the seed url
+     * and constrained by the max number of pages to crawl, which was set by the user in the constructor.
+     * The crawler has a "politeness policy" that waits 3 seconds per 100 requests to avoid overloading
+     * the server. After crawling, it outputs all the edges in the order they were found to the filename
+     * indicated by the user in the constructor.
      */
     public void crawl() {
+        System.out.println("Beginning crawl of " + BASE_URL + seedUrl);
+        System.out.println("Max number of pages to visit:  " + max);
+        System.out.println("Saving to filename:  " + fileName);
         BFS(seedUrl);
         Edge[] edgeArray = hashSetToArray(edges);
         Arrays.sort(edgeArray, new EdgeComparator());
         saveToFile(edgeArray, vertices.size());
     }
 
+    // Converts a HashSet of Edge objects to an Edge array
     private Edge[] hashSetToArray(HashSet<Edge> edgeSet) {
         Edge[] edgeArr = new Edge[edgeSet.size()];
         Iterator<Edge> iterator = edgeSet.iterator();
@@ -135,8 +159,11 @@ public class WikiCrawler {
         return edgeArr;
     }
 
+    // Performs a Bread-First Search to create a web graph, starting at url 'v'
     private void BFS(String v) {
         LinkedList<String> queue = new LinkedList<>();
+        HashSet<String> visited = new HashSet<>((int) Math.ceil(1.5 * max));
+
         queue.add(v);
         visited.add(v);
         vertices.add(v);
@@ -165,6 +192,8 @@ public class WikiCrawler {
         }
     }
 
+    // Saves an array of Edge objects to the file at fileName.
+    // The first line of the file is the number of vertices found.
     private void saveToFile(Edge[] edges, int numVertices) {
         BufferedWriter bw = null;
         FileWriter fw = null;
@@ -178,7 +207,7 @@ public class WikiCrawler {
                 bw.write(edge.toString());
                 bw.write('\n');
             }
-            System.out.println("Results saved to " + fileName);
+            print("Results saved to " + fileName);
         } catch (IOException e) {
             System.out.println("IOException for file name:  " + fileName);
             e.printStackTrace();
@@ -195,23 +224,25 @@ public class WikiCrawler {
         }
     }
 
+    // Curls the given relative url, using the BASE_URL and adhering to the "politeness policy"
     private String curlUrl(String urlString) {
-        String line;
-        if (politenessPolicyCounter > 99) {
+        // Wait if necessary, or increment the request counter
+        if (politenessPolicyCounter > NUM_CURLS_BEFORE_WAITING - 1) {
             try {
-                System.out.println("Waiting 3 seconds, per \"politeness policy.\"");
-                Thread.sleep(3000);
+                print("Waiting " + SECONDS_TO_WAIT + " seconds, per \"politeness policy.\"");
+                Thread.sleep(1000 * SECONDS_TO_WAIT);
             } catch (InterruptedException e) {
-                System.out.println("Received InterruptedException upon trying to sleep for 3 seconds, " +
-                        "per the \"politeness policy.\"");
+                System.out.println("Received InterruptedException upon trying to sleep for " + SECONDS_TO_WAIT
+                        + " seconds, per the \"politeness policy.\"");
                 e.printStackTrace();
             }
             politenessPolicyCounter = 0;
-        } else {
-            politenessPolicyCounter++;
         }
+        politenessPolicyCounter++;
+
+        String line;
         try {
-            System.out.println("Curling " + BASE_URL + urlString + " ...");
+            print("Curling " + BASE_URL + urlString + " ...");
             URL url = new URL(BASE_URL + urlString);
             InputStream is = url.openStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -228,5 +259,12 @@ public class WikiCrawler {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // Used for printing helpful information if VERBOSE_OUTPUT is set to 'true'
+    private void print(String msg) {
+        if (VERBOSE_OUTPUT) {
+            System.out.println(msg);
+        }
     }
 }
