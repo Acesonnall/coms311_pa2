@@ -1,8 +1,7 @@
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,28 +10,53 @@ import java.util.regex.Pattern;
  *
  * @author nkarasch
  */
+@SuppressWarnings("WeakerAccess")
 public class WikiCrawler {
     private String seedUrl;
     private int max;
     private String fileName;
 
     private HashSet<String> vertices;
-    private ArrayList<Edge> edges;
+    private HashSet<String> visited;
+    private HashSet<Edge> edges;
+    private int discoveryCount = 0;
 
     private static final String BASE_URL = "https://www.wikipedia.org";
 
     private class Edge {
         String from;
         String to;
+        int orderDiscovered;
 
-        public Edge(String from, String to) {
+        public Edge(String from, String to, int orderDiscovered) {
             this.from = from;
             this.to = to;
+            this.orderDiscovered = orderDiscovered;
         }
 
         @Override
         public String toString() {
             return from + " " + to;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Edge)) return false;
+            if (o == this) return true;
+            Edge oEdge = (Edge) o;
+            return oEdge.from.equals(from) && oEdge.to.equals(to);
+        }
+
+        @Override
+        public int hashCode() {
+            return from.hashCode() + to.hashCode();
+        }
+    }
+
+    private class EdgeComparator implements Comparator<Edge> {
+        @Override
+        public int compare(Edge e1, Edge e2) {
+            return e1.orderDiscovered - e2.orderDiscovered;
         }
     }
 
@@ -45,8 +69,10 @@ public class WikiCrawler {
         this.seedUrl = seedUrl;
         this.max = max;
         this.fileName = fileName;
-        vertices = new HashSet<>((int) Math.ceil(1.5 * max));
-        edges = new ArrayList<>();
+        int initialSize = (int) Math.ceil(1.5 * max);
+        vertices = new HashSet<>(initialSize);
+        visited = new HashSet<>(initialSize);
+        edges = new HashSet<>(initialSize);
     }
 
     /**
@@ -91,22 +117,55 @@ public class WikiCrawler {
      * the web graph only over those pages. and writes the graph to the file fileName.
      */
     public void crawl() {
-        String seedDoc = curlUrl(seedUrl);
-        ArrayList<String> links = extractLinks(seedDoc);
-        for (String link : links) {
-            if (vertices.size() < max) {
-                vertices.add(link);
+        BFS(seedUrl);
+        Edge[] edgeArray = hashSetToArray(edges);
+        Arrays.sort(edgeArray, new EdgeComparator());
+        saveToFile(edgeArray, vertices.size());
+    }
+
+    private Edge[] hashSetToArray(HashSet<Edge> edgeSet) {
+        Edge[] edgeArr = new Edge[edgeSet.size()];
+        Iterator<Edge> iterator = edgeSet.iterator();
+        int i = 0;
+        while (iterator.hasNext()) {
+            Edge next = iterator.next();
+            edgeArr[i++] = next;
+        }
+        return edgeArr;
+    }
+
+    private void BFS(String v) {
+        LinkedList<String> queue = new LinkedList<>();
+        queue.add(v);
+        visited.add(v);
+        while (!queue.isEmpty()) {
+            String u = queue.pop();
+            String urlDoc = curlUrl(u);
+            ArrayList<String> links = extractLinks(urlDoc);
+            for (String link : links) {
+                if (vertices.contains(link)) {
+                    edges.add(new Edge(u, link, discoveryCount++));
+                } else if (vertices.size() < max) {
+                    vertices.add(link);
+                    edges.add(new Edge(u, link, discoveryCount++));
+                    if (!visited.contains(link)) {
+                        queue.add(link);
+                        visited.add(link);
+                    }
+                }
             }
         }
     }
 
-    private void saveToFile(ArrayList<Edge> edges) {
+    private void saveToFile(Edge[] edges, int numVertices) {
         BufferedWriter bw = null;
         FileWriter fw = null;
 
         try {
             fw = new FileWriter(fileName);
             bw = new BufferedWriter(fw);
+            bw.write(Integer.toString(numVertices));
+            bw.write('\n');
             for (Edge edge : edges) {
                 bw.write(edge.toString());
                 bw.write('\n');
