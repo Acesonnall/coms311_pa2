@@ -20,8 +20,9 @@ public class WikiCrawler {
     private HashSet<String> visited;
     private HashSet<Edge> edges;
     private int discoveryCount = 0;
+    private int politenessPolicyCounter = 0;
 
-    private static final String BASE_URL = "https://www.wikipedia.org";
+    public static final String BASE_URL = "https://en.wikipedia.org";
 
     private class Edge {
         String from;
@@ -138,14 +139,21 @@ public class WikiCrawler {
         LinkedList<String> queue = new LinkedList<>();
         queue.add(v);
         visited.add(v);
+        vertices.add(v);
         while (!queue.isEmpty()) {
             String u = queue.pop();
             String urlDoc = curlUrl(u);
             ArrayList<String> links = extractLinks(urlDoc);
             for (String link : links) {
                 if (vertices.contains(link)) {
-                    edges.add(new Edge(u, link, discoveryCount++));
+                    // Add edges to previously-visited pages
+                    if (!u.equals(link)) {
+                        // Prevent self loops
+                        edges.add(new Edge(u, link, discoveryCount++));
+                    }
                 } else if (vertices.size() < max) {
+                    // Add edges to not-yet-visited pages if we haven't reached the
+                    // max number of vertices yet
                     vertices.add(link);
                     edges.add(new Edge(u, link, discoveryCount++));
                     if (!visited.contains(link)) {
@@ -189,6 +197,19 @@ public class WikiCrawler {
 
     private String curlUrl(String urlString) {
         String line;
+        if (politenessPolicyCounter > 99) {
+            try {
+                System.out.println("Waiting 3 seconds, per \"politeness policy.\"");
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                System.out.println("Received InterruptedException upon trying to sleep for 3 seconds, " +
+                        "per the \"politeness policy.\"");
+                e.printStackTrace();
+            }
+            politenessPolicyCounter = 0;
+        } else {
+            politenessPolicyCounter++;
+        }
         try {
             System.out.println("Curling " + BASE_URL + urlString + " ...");
             URL url = new URL(BASE_URL + urlString);
