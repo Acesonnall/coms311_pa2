@@ -17,7 +17,7 @@ public class Main {
         int outDegree = g.outDegree(v);
         long end = System.nanoTime();
         System.out.println("  Result:  " + outDegree);
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
 
         u = "";
         v = "";
@@ -26,7 +26,7 @@ public class Main {
         boolean sameComponent = g.sameComponent(u, v);
         end = System.nanoTime();
         System.out.println("  Result:  " + sameComponent);
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
 
         v = "";
         System.out.println("Running g.componentVertices(\"" + v + "\")");
@@ -38,21 +38,21 @@ public class Main {
             System.out.println(componentVertex);
         }
         System.out.println("  ]");
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
 
         System.out.println("Running g.largestComponent()");
         start = System.nanoTime();
         int largestComponent = g.largestComponent();
         end = System.nanoTime();
         System.out.println("  Result:  " + largestComponent);
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
 
         System.out.println("Running g.numComponents()");
         start = System.nanoTime();
         int numComponents = g.numComponents();
         end = System.nanoTime();
         System.out.println("  Result:  " + numComponents);
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
 
         v = "";
         u = "";
@@ -65,6 +65,6 @@ public class Main {
             System.out.println(s);
         }
         System.out.println("  ]");
-        System.out.println("  Runtime: " + (end - start) + " ns");
+        System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000.0) + " seconds)");
     }
 }

@@ -38,8 +38,8 @@ public class GraphProcessor {
      * @return the out degree of v
      */
     public int outDegree(String v) {
-        // TODO
-        return 0;
+        HashSet<String> set = graph.get(v);
+        return (set == null) ? 0 : set.size();
     }
 
     /**
