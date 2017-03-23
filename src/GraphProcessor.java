@@ -18,7 +18,8 @@ import java.util.*;
  */
 @SuppressWarnings("WeakerAccess")
 public class GraphProcessor {
-    HashMap<String, HashSet<String>> graph;
+    private HashMap<String, HashSet<String>> graph;
+    private SCCHelper sccHelper;
 
     /**
      * @param graphData The absolute path of a file that stores a directed graph
@@ -26,6 +27,7 @@ public class GraphProcessor {
     public GraphProcessor(String graphData) {
         try {
             initGraphFromFile(graphData);
+            sccHelper = new SCCHelper((int) Math.ceil(1.5 * graph.size()));
         } catch (IOException e) {
             System.out.println("Couldn't read file! Given filename:  " + graphData);
             e.printStackTrace();
@@ -47,7 +49,11 @@ public class GraphProcessor {
      * @return 'true' if u and v belong to the same SCC; otherwise returns 'false'
      */
     public boolean sameComponent(String u, String v) {
-        // TODO
+        for (HashSet<String> scc : sccHelper.stronglyConnectedComponents) {
+            if (scc.contains(u) && scc.contains(v)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -56,7 +62,13 @@ public class GraphProcessor {
      * @return All the vertices that belong to the same Strongly Connected Component of v (including v)
      */
     public ArrayList<String> componentVertices(String v) {
-        // TODO
+        for (HashSet<String> scc : sccHelper.stronglyConnectedComponents) {
+            if (scc.contains(v)) {
+                return new ArrayList<>(scc);
+            }
+        }
+        // NOTE: It should never reach this point!
+        System.out.println("ERROR: componentVertices(\"" + v + "\")"); // FIXME
         return new ArrayList<String>();
     }
 
@@ -64,16 +76,18 @@ public class GraphProcessor {
      * @return The size of the largest component
      */
     public int largestComponent() {
-        // TODO
-        return 0;
+        int max = 0;
+        for (HashSet<String> scc : sccHelper.stronglyConnectedComponents) {
+            max = Math.max(max, scc.size());
+        }
+        return max;
     }
 
     /**
      * @return The number of Strongly Connected Components
      */
     public int numComponents() {
-        // TODO
-        return 0;
+        return sccHelper.stronglyConnectedComponents.size();
     }
 
     /**
@@ -112,6 +126,125 @@ public class GraphProcessor {
         // Reverse the list before returning it, so it goes from u to v
         Collections.reverse(pathList);
         return pathList;
+    }
+
+    private class SCCHelper {
+        private int finishTimeCounter = 0;
+        private HashSet<String> visited;
+        private PriorityQueue<VertexTime> finishTimes;
+        private HashMap<String, HashSet<String>> reversedGraph;
+        private HashSet<String> tempSCC;
+
+        private class VertexTime {
+            String vertex;
+            int time;
+
+            VertexTime(String v, int t) {
+                vertex = v;
+                time = t;
+            }
+        }
+
+        ArrayList<HashSet<String>> stronglyConnectedComponents;
+
+        SCCHelper(int initSize) {
+            // Create reversedGraph
+            reversedGraph = new HashMap<>(initSize);
+            initReverseGraph();
+
+            // Create finishTime map
+            visited = new HashSet<>(initSize);
+            finishTimes = new PriorityQueue<>(initSize, (v1, v2) -> v2.time - v1.time);
+            initFinishTime();
+
+            // Compute SCC using DFS based on finishTime ordering
+            visited = new HashSet<>(initSize);
+            stronglyConnectedComponents = new ArrayList<>();
+            initSCC();
+
+            // Cleanup
+            reversedGraph = null;
+            visited = null;
+            finishTimes = null;
+            tempSCC = null; // TODO: Check if this breaks it
+        }
+
+        private void initSCC() {
+            String vertex;
+            while (!finishTimes.isEmpty()) {
+                // Iterate through every vertex in the graph, based on finish times high to low
+                vertex = finishTimes.poll().vertex;
+                if (!visited.contains(vertex)) {
+                    HashSet<String> currentSCC = new HashSet<>();
+                    stronglyConnectedComponents.add(currentSCC);
+                    tempSCC = currentSCC;
+                    sccDFS(vertex);
+                }
+            }
+        }
+
+        private void sccDFS(String v) {
+            tempSCC.add(v);
+            visited.add(v);
+            for (String u : graph.get(v)) {
+                if (!visited.contains(u)) {
+                    sccDFS(u);
+                }
+            }
+        }
+
+        private void initFinishTime() {
+            for (String vertex : graph.keySet()) {
+                if (!visited.contains(vertex)) {
+                    finishDFS(vertex);
+                }
+            }
+        }
+
+        private void finishDFS(String v) {
+            visited.add(v);
+            HashSet<String> children = graph.get(v);
+            for (String child : children) {
+                if (!visited.contains(child)) {
+                    GraphProcessor.this.finishDFS(child);
+                }
+            }
+            finishTimes.add(new VertexTime(v, finishTimeCounter++));
+        }
+
+        private void initReverseGraph() {
+            for (String vertex : graph.keySet()) {
+                HashSet<String> children = graph.get(vertex);
+                for (String child : children) {
+                    reversedGraph.putIfAbsent(child, new HashSet<>());
+                    reversedGraph.putIfAbsent(vertex, new HashSet<>());
+                    reversedGraph.get(child).add(vertex);
+                }
+            }
+        }
+    }
+
+    private HashMap<String, Integer> finishDFS(String v) {
+        int initSize = (int) Math.ceil(1.5 * graph.size());
+        HashSet<String> visited = new HashSet<>(initSize);
+        Stack<String> stack = new Stack<>();
+
+        stack.add(v);
+        visited.add(v);
+        String u;
+        while (!stack.isEmpty()) {
+            u = stack.pop();
+            // TODO: Output?
+            HashSet<String> children = graph.get(u);
+            for (String child : children) {
+                if (!visited.contains(child)) {
+                    stack.add(child);
+                    visited.add(child);
+                }
+            }
+        }
+        // TODO
+        return null;
     }
 
     // Performs a Bread-First Search of the graph, creating a BFS Tree in the form
