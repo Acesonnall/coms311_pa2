@@ -1,9 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * The GraphProcessor reads a graph stored in a file, using a Strongly Connected Components (SCC)
@@ -18,6 +16,7 @@ import java.util.HashSet;
  *
  * @author nkarasch
  */
+@SuppressWarnings("WeakerAccess")
 public class GraphProcessor {
     HashMap<String, HashSet<String>> graph;
 
@@ -87,8 +86,54 @@ public class GraphProcessor {
      * @return The BFS path from u to v.
      */
     public ArrayList<String> bfsPath(String u, String v) {
-        // TODO
-        return new ArrayList<String>();
+        ArrayList<String> pathList = new ArrayList<>();
+        if (graph.get(u) == null) {
+            // The starting vertex wasn't in the graph, so there's no path
+            return pathList;
+        }
+
+        // Create a BFS-Tree starting at 'u'
+        HashMap<String, String> bfsTree = bfsTree(u);
+
+        // Start at the last vertex in the path
+        String current = bfsTree.get(v);
+        if (current == null) {
+            // There is no path from u to v, so return an empty ArrayList
+            return pathList;
+        }
+
+        // Add the vertices in the path, from child to parent (from v to u)
+        pathList.add(v);
+        while (current != null) {
+            pathList.add(current);
+            current = bfsTree.get(current);
+        }
+
+        // Reverse the list before returning it, so it goes from u to v
+        Collections.reverse(pathList);
+        return pathList;
+    }
+
+    // Performs a Bread-First Search of the graph, creating a BFS Tree in the form
+    // of a HashMap, where the value is the parent vertex of the key
+    private HashMap<String, String> bfsTree(String v) {
+        LinkedList<String> queue = new LinkedList<>();
+        int initSize = (int) Math.ceil(1.5 * graph.size());
+        HashMap<String, String> tree = new HashMap<>(initSize);
+
+        queue.add(v);
+        tree.put(v, null);
+        while (!queue.isEmpty()) {
+            String parent = queue.pop();
+            HashSet<String> children = graph.get(parent);
+            for (String child : children) {
+                if (!tree.containsKey(child)) {
+                    queue.add(child);
+                    tree.put(child, parent);
+                }
+            }
+        }
+        return tree;
     }
 
     // Assuming the file is in the correct format, this method will read the
@@ -124,6 +169,7 @@ public class GraphProcessor {
             to = line.substring(splitIndex).trim();
 
             graph.putIfAbsent(from, new HashSet<>());
+            graph.putIfAbsent(to, new HashSet<>());
             graph.get(from).add(to);
         }
         reader.close();
