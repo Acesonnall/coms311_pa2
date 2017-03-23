@@ -24,14 +24,18 @@ public class GraphProcessor {
     /**
      * @param graphData The absolute path of a file that stores a directed graph
      */
-    public GraphProcessor(String graphData) {
-        try {
-            initGraphFromFile(graphData);
-            sccHelper = new SCCHelper((int) Math.ceil(1.5 * graph.size()));
-        } catch (IOException e) {
-            System.out.println("Couldn't read file! Given filename:  " + graphData);
-            e.printStackTrace();
-        }
+    public GraphProcessor(String graphData) throws IOException {
+        System.out.print("Initializing graph from file ... ");
+        long start = System.nanoTime();
+        initGraphFromFile(graphData);
+        long end = System.nanoTime();
+        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
+
+        System.out.print("Discovering Strongly-Connected Components ... ");
+        start = System.nanoTime();
+        sccHelper = new SCCHelper((int) Math.ceil(1.5 * graph.size()));
+        end = System.nanoTime();
+        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
     }
 
     /**
@@ -67,9 +71,7 @@ public class GraphProcessor {
                 return new ArrayList<>(scc);
             }
         }
-        // NOTE: It should never reach this point!
-        System.out.println("ERROR: componentVertices(\"" + v + "\")"); // FIXME
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
@@ -206,7 +208,7 @@ public class GraphProcessor {
             HashSet<String> children = graph.get(v);
             for (String child : children) {
                 if (!visited.contains(child)) {
-                    GraphProcessor.this.finishDFS(child);
+                    finishDFS(child);
                 }
             }
             finishTimes.add(new VertexTime(v, finishTimeCounter++));
@@ -222,29 +224,6 @@ public class GraphProcessor {
                 }
             }
         }
-    }
-
-    private HashMap<String, Integer> finishDFS(String v) {
-        int initSize = (int) Math.ceil(1.5 * graph.size());
-        HashSet<String> visited = new HashSet<>(initSize);
-        Stack<String> stack = new Stack<>();
-
-        stack.add(v);
-        visited.add(v);
-        String u;
-        while (!stack.isEmpty()) {
-            u = stack.pop();
-            // TODO: Output?
-            HashSet<String> children = graph.get(u);
-            for (String child : children) {
-                if (!visited.contains(child)) {
-                    stack.add(child);
-                    visited.add(child);
-                }
-            }
-        }
-        // TODO
-        return null;
     }
 
     // Performs a Bread-First Search of the graph, creating a BFS Tree in the form

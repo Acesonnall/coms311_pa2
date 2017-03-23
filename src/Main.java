@@ -1,8 +1,9 @@
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String u, v;
 
 //        WikiCrawler w = new WikiCrawler("/wiki/Computer_Science", 500, "wikiCS.txt");
@@ -11,7 +12,7 @@ public class Main {
         // TODO: Test with absolute path
         GraphProcessor g = new GraphProcessor("wikiCS.txt");
 
-        v = "/wiki/Computer_Science";
+        v = "/wiki/Metamodeling";
         System.out.println("Running g.outDegree(\"" + v + "\")");
         long start = System.nanoTime();
         int outDegree = g.outDegree(v);
@@ -19,8 +20,8 @@ public class Main {
         System.out.println("  Result:  " + outDegree);
         System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
 
-        u = "";
-        v = "";
+        u = "/wiki/Metamodeling";
+        v = "/wiki/Computer_Science";
         System.out.println("Running g.sameComponent(\"" + u + "\", \"" + v + "\")");
         start = System.nanoTime();
         boolean sameComponent = g.sameComponent(u, v);
@@ -28,7 +29,7 @@ public class Main {
         System.out.println("  Result:  " + sameComponent);
         System.out.println("  Runtime: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
 
-        v = "";
+        v = "/wiki/Metamodeling";
         System.out.println("Running g.componentVertices(\"" + v + "\")");
         start = System.nanoTime();
         ArrayList<String> componentVertices = g.componentVertices(v);
