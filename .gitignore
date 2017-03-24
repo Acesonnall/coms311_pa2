@@ -168,4 +168,4 @@ hs_err_pid*
 # Consider removing these if you share with other devs using IntelliJ IDEA
 *.iml
 .idea
-_WikiCrawlerTest_results.txt
+test/_WikiCrawlerTest_crawl_results.txt

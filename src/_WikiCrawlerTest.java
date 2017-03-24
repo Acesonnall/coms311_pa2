@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  */
 public class _WikiCrawlerTest {
     private WikiCrawler w;
-    private static final String CRAWL_RESULTS_FILENAME = "_WikiCrawlerTest_results.txt";
+    private static final String CRAWL_RESULTS_FILENAME = "test/_WikiCrawlerTest_crawl_results.txt";
 
     @Before
     public void setUp() {
@@ -21,20 +21,20 @@ public class _WikiCrawlerTest {
 
     @Test
     public void extractLinks() {
-        String webpageFilename = "_WikiCrawlerTest_extractLinks_test_data.txt";
+        String webpageFilename = "test/_WikiCrawlerTest_extractLinks_test_data.txt";
         String webpage = "";
         try {
             webpage = readFile(webpageFilename);
         } catch (IOException e) {
-            fail("Couldn't open file '" + webpageFilename + "'! Make sure it's in the root project directory");
+            fail("Couldn't open file '" + webpageFilename + "'! Make sure it's in the project's test directory");
         }
 
-        String expectedResultsFilename = "_WikiCrawlerTest_extractLinks_expected_results.txt";
+        String expectedResultsFilename = "test/_WikiCrawlerTest_extractLinks_expected_results.txt";
         String expected = "";
         try {
             expected = readFile(expectedResultsFilename);
         } catch (IOException e) {
-            fail("Couldn't open file '" + expectedResultsFilename + "'! Make sure it's in the root project directory");
+            fail("Couldn't open file '" + expectedResultsFilename + "'! Make sure it's in the project's test directory");
         }
 
         String[] actual = w.extractLinks(webpage).toArray(new String[0]);
@@ -44,12 +44,12 @@ public class _WikiCrawlerTest {
 
     @Test
     public void crawl() {
-        String expectedFilename = "wikiCC.txt";
+        String expectedFilename = "test/_WikiCrawlerTest_crawl_expected_results.txt";
         String expected = "";
         try {
             expected = readFile(expectedFilename);
         } catch (IOException e) {
-            fail("Couldn't open file '" + expectedFilename + "'! Make sure it's in the root project directory");
+            fail("Couldn't open file '" + expectedFilename + "'! Make sure it's in the project's test directory");
         }
 
         w.crawl();
@@ -58,7 +58,7 @@ public class _WikiCrawlerTest {
         try {
             actual = readFile(CRAWL_RESULTS_FILENAME);
         } catch (IOException e) {
-            fail("Couldn't open file '" + CRAWL_RESULTS_FILENAME + "'! Make sure it's in the root project directory");
+            fail("Couldn't open file '" + CRAWL_RESULTS_FILENAME + "'! Make sure it's in the project's test directory");
         }
 
         assertEquals(expected, actual);

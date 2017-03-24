@@ -15,7 +15,7 @@ public class _GraphProcessorTest {
     @Before
     public void setUp() {
         try {
-            g = new GraphProcessor("_GraphProcessorTest_data.txt");
+            g = new GraphProcessor("test/_GraphProcessorTest_data.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
