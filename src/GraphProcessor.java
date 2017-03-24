@@ -25,17 +25,17 @@ public class GraphProcessor {
      * @param graphData The absolute path of a file that stores a directed graph
      */
     public GraphProcessor(String graphData) throws IOException {
-        System.out.print("Initializing graph from file ... ");
-        long start = System.nanoTime();
+//        System.out.print("Initializing graph from file ... ");
+//        long start = System.nanoTime();
         initGraphFromFile(graphData);
-        long end = System.nanoTime();
-        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
+//        long end = System.nanoTime();
+//        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
 
-        System.out.print("Discovering Strongly-Connected Components ... ");
-        start = System.nanoTime();
+//        System.out.print("Discovering Strongly-Connected Components ... ");
+//        start = System.nanoTime();
         sccHelper = new SCCHelper((int) Math.ceil(1.5 * graph.size()));
-        end = System.nanoTime();
-        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
+//        end = System.nanoTime();
+//        System.out.println("done. Time taken: " + (end - start) + " ns   (" + ((end - start) / 1000000000.0) + " seconds)");
     }
 
     /**
@@ -205,7 +205,7 @@ public class GraphProcessor {
 
         private void finishDFS(String v) {
             visited.add(v);
-            HashSet<String> children = graph.get(v);
+            HashSet<String> children = reversedGraph.get(v);
             for (String child : children) {
                 if (!visited.contains(child)) {
                     finishDFS(child);
