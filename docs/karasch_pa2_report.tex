@@ -1,0 +1,205 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{centernot}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,frame=Trbl,numbers=left}
+% \usepackage{graphicx}
+% \graphicspath{ {images/} }
+\setlength{\parskip}{0.5em}
+
+
+\pagestyle{fancy}
+\lhead{Nathan Karasch}
+\rhead{COMS 311 - Programming Assignment 2}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+\begin{document}
+
+\section{Data Stuctures for $Q$ and $visited$}
+
+$Q$ was implemented as
+
+Give choice and rationale
+
+\section{Analysis of \textbf{WikiCS.txt}}
+
+\textbf{Number of edges:}
+
+23963
+
+\noindent
+\textbf{Number of vertices:}
+
+500
+
+\noindent
+\textbf{Vertex with largest out degree:}
+
+/wiki/Computer\_Science (499 outgoing edges)
+
+\noindent
+\textbf{Number of strongly connected components:}
+
+9
+
+\noindent
+\textbf{Size of the largest component:}
+
+492
+
+\section{Data Structures Used in \lstinline
+  [basicstyle=\ttfamily\Large]
+  |GraphProcessor|}
+
+\section{Runtimes for \lstinline
+  [basicstyle=\ttfamily\Large]
+  |GraphProcessor| Methods}
+
+\subsection{outDegree(String v)}
+
+\subsection{sameComponent(String u, String v)}
+
+\subsection{componentVertices(String v)}
+
+\subsection{largestComponent()}
+
+\subsection{numComponents()}
+
+\subsection{bfsPath(String u, String v)}
+
+
+
+
+
+
+\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
+
+
+
+
+
+
+
+
+\section{Algorithm for
+  \lstinline[basicstyle=\ttfamily\Large]
+  |buildDataStructure()|}
+
+\begin{lstlisting}
+  public void buildDataStructure() {
+    int n = (int) Math.floor(1.5 * points.size());
+    hashTable = new HashTable(n);
+    for (float f : points) {
+      // Use the neighbor-preserving hash as the
+      // tuple key
+      hashTable.add(new Tuple(npHash(f), f));
+    }
+  }
+\end{lstlisting}
+
+The neighbor-preserving hash, as specified in the guidelines, is the
+floor function. \\
+
+\begin{lstlisting}
+  private static int npHash(float p) {
+    return (int) Math.floor(p);
+  }
+\end{lstlisting}
+
+In general terms, the algorithm looks like so: \\
+
+\begin{enumerate}
+\item Create a hash table of size $floor(1.5 * n)$, where $n$ is the
+  number of points you will put into your data structure. The 1.5 is
+  chosen to avoid the hash table reaching a load factor of 0.7
+  as points get added. So it will never have to waste time doubling
+  size as the hash table is built.
+\item For each float in the set of points, create a Tuple with the
+  float as the value $v$ and the neighbor-preserving hash as the
+  key $k$. The neighbor-preserving hash chosen was $k = floor(v)$.
+  \item Add the Tuple($k$, $v$) to the hash table.
+  \end{enumerate}
+
+  
+
+\pagebreak
+\section{Algorithm for
+  \lstinline[basicstyle=\ttfamily\Large]
+  |npHashNearestPoints(float p)|}
+
+\begin{lstlisting}
+  public ArrayList<Float> npHashNearestPoints(float p) {
+    ArrayList<Float> result = new ArrayList<>();
+    int npHashP = npHash(p);
+
+    ArrayList<Tuple> candidateTuples
+                            = hashTable.search(npHashP);
+
+    // Points with the exact same npHash are close
+    for (Tuple t : candidateTuples) {
+      result.add(t.getValue());
+    }
+
+    // Points with npHashes that differ by +/- 1 MIGHT
+    // be close (requires checking)
+    candidateTuples = hashTable.search(npHashP + 1);
+    candidateTuples.addAll(
+                     hashTable.search(npHashP - 1));
+    for (Tuple t : candidateTuples) {
+      if (areClose(p, t.getValue())) {
+        result.add(t.getValue());
+      }
+    }
+
+    return result;
+  }
+\end{lstlisting}
+
+In general terms, the algorithm looks like so:
+
+\begin{enumerate}
+\item Search the hash table for all elements with key $k$ matching the
+  neighbor-preserving hash $h$ of the input $p$. Add these to
+  a results array $A$, since anything with the same neighbor-preserving
+  hash will be close to $p$.
+\item Search the hash table for all elements where $k = h+1$ or $k=h-1$.
+  These elements \textit{might} be close to $p$, but we need to check
+  to verify.
+\item For each candidate tuple with key $h+1$ or $h-1$, check to see
+  if the actual value is close to $p$, and add ``close'' points to $A$.
+  \item Return $A$.
+\end{enumerate}
+
+
+
+
+\pagebreak
+\section{Actual Runtimes}
+
+Commands were executed on a \lstinline|NearestPoints| instance loaded
+with the 100,000 points given in the ``points.txt'' file. The runtime
+measurement of \lstinline|new NearestPoints("points.txt")|
+includes the cost of \lstinline|buildDataStructure()|, but the other
+methods do not. All runtimes were measured using the following method: \\
+
+\begin{lstlisting}
+  long start = System.currentTimeMillis();
+  executeCommand();
+  long end = System.currentTimeMillis();
+  long runtime = end - start;
+\end{lstlisting}
+\bigskip
+
+\textbf{new NearestPoints("points.txt")}: 242 ms \\
+
+\textbf{allNearestPointsNaive()}: 44050 ms \\
+
+\textbf{allNearestPointsHash()}: 170 ms
+
+
+\end{document}

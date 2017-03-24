@@ -286,4 +286,17 @@ public class GraphProcessor {
         }
         reader.close();
     }
+
+    // Used for running the report
+    private String largestOutDegree() {
+        int max = 0;
+        String maxVertex = "";
+        for (String v : graph.keySet()) {
+            if (graph.get(v).size() > max) {
+                max = graph.get(v).size();
+                maxVertex = v;
+            }
+        }
+        return maxVertex + " , " + max;
+    }
 }
