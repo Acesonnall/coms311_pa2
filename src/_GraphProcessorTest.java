@@ -1,28 +1,28 @@
 import java.io.IOException;
 import java.util.Arrays;
 
-//import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.Test;
+import org.junit.Before;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * @author nkarasch
  */
-class _GraphProcessorTest {
-    GraphProcessor g;
+public class _GraphProcessorTest {
+    private GraphProcessor g;
 
-    @BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
         try {
-            g = new GraphProcessor("gp_test.txt");
+            g = new GraphProcessor("_GraphProcessorTest_data.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @org.junit.jupiter.api.Test
-    void outDegree() {
+    @Test
+    public void outDegree() {
         // Valid vertices
         assertEquals(0, g.outDegree("Y"));
         assertEquals(1, g.outDegree("A"));
@@ -34,8 +34,8 @@ class _GraphProcessorTest {
         assertEquals(0, g.outDegree("Pork rind? Pork rind."));
     }
 
-    @org.junit.jupiter.api.Test
-    void sameComponent() {
+    @Test
+    public void sameComponent() {
         // Valid vertices
         // In the same component
         assertTrue(g.sameComponent("A", "F"));
@@ -56,8 +56,8 @@ class _GraphProcessorTest {
         assertFalse(g.sameComponent("Aren't you a little young to build a rollercoaster?", "Why yes, yes I am."));
     }
 
-    @org.junit.jupiter.api.Test
-    void componentVertices() {
+    @Test
+    public void componentVertices() {
         String[] actual;
 
         // Valid vertices
@@ -97,18 +97,18 @@ class _GraphProcessorTest {
         assertArrayEquals(emptyList, actual);
     }
 
-    @org.junit.jupiter.api.Test
-    void largestComponent() {
+    @Test
+    public void largestComponent() {
         assertEquals(9, g.largestComponent());
     }
 
-    @org.junit.jupiter.api.Test
-    void numComponents() {
+    @Test
+    public void numComponents() {
         assertEquals(6, g.numComponents());
     }
 
-    @org.junit.jupiter.api.Test
-    void bfsPath() {
+    @Test
+    public void bfsPath() {
         String[] actual;
 
         // Valid vertices with a path
