@@ -103,8 +103,17 @@ public class GraphProcessor {
      */
     public ArrayList<String> bfsPath(String u, String v) {
         ArrayList<String> pathList = new ArrayList<>();
+
         if (graph.get(u) == null) {
             // The starting vertex wasn't in the graph, so there's no path
+            return pathList;
+        }
+
+        // If u == v (same vertex), return a list [u, v]
+        // per clarifications in discussion post "BFS Path" by Logan Heitz from 3/26/17.
+        if (u.equals(v)) {
+            pathList.add(u);
+            pathList.add(v);
             return pathList;
         }
 

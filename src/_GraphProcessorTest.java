@@ -152,8 +152,12 @@ public class _GraphProcessorTest {
         assertArrayEquals(emptyList, actual);
 
         // Path of length zero for a vertex going to itself
+        // EDIT: Modified to fit the discussion board clarifications.
+        //       See post "BFS Path" by Logan Heitz from 3/26/17.
+        // Should return [A, A] (first and last vertices are A)
+        String[] expected8 = {"A", "A"};
         actual = g.bfsPath("A", "A").toArray(new String[0]);
-        assertArrayEquals(emptyList, actual);
+        assertArrayEquals(expected8, actual);
 
         // Invalid vertices
         actual = g.bfsPath("A", "You? What did you do?").toArray(new String[0]);
