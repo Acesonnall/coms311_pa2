@@ -2,6 +2,7 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+% \usepackage{textcomp}           % For angle brackets in text
 \usepackage{centernot}
 \usepackage{fancyhdr}
 \usepackage{listings}
@@ -22,14 +23,14 @@
 
 \section{Data Stuctures for $Q$ and $visited$}
 
-$Q$ was implemented as a LinkedList of String objects, because
+$Q$ was implemented as a \lstinline|LinkedList<String>| object, because
 a LinkedList can act as a First-in First-out (FIFO) queue
 structure. Vertices can be added to the front and removed from
 the end in constant time.
 
 \bigskip
 \noindent
-$visited$ was implemented as a HashSet of String objects. Adding
+$visited$ was implemented as a \lstinline|HashSet<String>| object. Adding
 vertices and searching for vertices are the only two operations
 needed. Expected runtime for both operations is
 $O(h(x) + \text{Average Load})$, where $h(x)$ is the time taken to
@@ -75,6 +76,41 @@ required operations to implement the algorithm.
 \section{Data Structures Used in \lstinline
   [basicstyle=\ttfamily\Large]
   |GraphProcessor|}
+
+\noindent
+The main graph was stored in a single
+\lstinline|HashMap<String, HashSet<String>>|
+object. Each String key is a vertex in the graph, and each key's value
+\lstinline|HashSet<String>| is the set of vertices
+representing outgoing edges from the key vertex.
+
+\bigskip
+\noindent
+To compute and store Strongly-Connected Components (SCC), a private
+class called \textbf{SCCHelper} was used. It used the following data
+structures:
+
+\begin{itemize}
+\item \lstinline|HashSet<String> visited|
+\item \lstinline|PriorityQueue<VertexTime> finishTimes|
+\item \lstinline|HashMap<String, HashSet<String>> reversedGraph|
+\item \lstinline|HashSet<String> tempSCC|
+\item \lstinline|ArrayList<HashSet<String>> stronglyConnectedComponents|
+\end{itemize}
+
+\bigskip
+\noindent
+The \lstinline|VertexTime| class was just a wrapper class for a String
+and an int, representing the vertex and time values to sort vertexes
+in the SCC algorithm by decreasing finish times.
+
+\bigskip
+\noindent
+After the SCC algorithm runs, the SCC's are stored in the\\
+\lstinline|stronglyConnectedComponents| variable, and all the other
+data structures are set to \lstinline|null| so they can be cleaned up
+by the garbage collector and release memory they were using.
+
 
 \section{Runtimes for \lstinline
   [basicstyle=\ttfamily\Large]
