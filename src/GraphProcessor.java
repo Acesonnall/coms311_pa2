@@ -177,7 +177,7 @@ public class GraphProcessor {
             reversedGraph = null;
             visited = null;
             finishTimes = null;
-            tempSCC = null; // TODO: Check if this breaks it
+            tempSCC = null;
         }
 
         private void initSCC() {

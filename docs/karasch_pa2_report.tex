@@ -22,10 +22,29 @@
 
 \section{Data Stuctures for $Q$ and $visited$}
 
-$Q$ was implemented as a LinkedList, because it can act as a
-First-in First-out (FIFO) queue structure. Vertices
+$Q$ was implemented as a LinkedList of String objects, because
+a LinkedList can act as a First-in First-out (FIFO) queue
+structure. Vertices can be added to the front and removed from
+the end in constant time.
 
-Give choice and rationale
+\bigskip
+\noindent
+$visited$ was implemented as a HashSet of String objects. Adding
+vertices and searching for vertices are the only two operations
+needed. Expected runtime for both operations is
+$O(h(x) + \text{Average Load})$, where $h(x)$ is the time taken to
+hash the string. Assuming the hash function is good (it is) the
+average load will be small. Assuming the string lengths are relatively
+short and don't grow asymptotically (as is the case for the links),
+we can say the time to compute $h(x)$ is negligible. Therefore
+the expected runtime for both Insert and Search are approximately
+$O(1)$.
+
+\bigskip
+\noindent
+In short, LinkedList and HashSet were chosen for $Q$ and $visited$
+because they both provide constant time operations for the
+required operations to implement the algorithm.
 
 \section{Analysis of \textbf{WikiCS.txt}}
 
